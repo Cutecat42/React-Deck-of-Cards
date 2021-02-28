@@ -1,16 +1,23 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import axios from 'axios';
 import Card from "./Card"
 
 const Cards = () => {
-    const drawCard = () => {
+    const [card,setCard] = useState('');
+    const [deck,setDeck] = useState('');
 
+
+    async function drawCard() {
+        const res = await axios.get(`https://deckofcardsapi.com/api/deck/${deck.data.deck_id}/draw/?count=1`);
+        setCard(`${res.data.cards[0].suit} ${res.data.cards[0].value}`)
+        console.log(res.data.remaining)
     }
 
     useEffect(()=> {
         async function getDeck() {
-            const deck = await axios.get('https://deckofcardsapi.com/api/deck/new/');
-            console.log(deck)
+            const unshuffledDeck = await axios.get('https://deckofcardsapi.com/api/deck/new/');
+            const newDeck = await axios.get(`https://deckofcardsapi.com/api/deck/${unshuffledDeck.data.deck_id}/shuffle/`);
+            setDeck(newDeck)
         }
         getDeck()
     },[])
@@ -18,7 +25,7 @@ const Cards = () => {
     return (
         <div>
             <button onClick={drawCard}>Draw a card!</button>
-            <Card />
+            <Card card={card}/>
         </div>
     )
 }
